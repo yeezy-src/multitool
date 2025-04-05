@@ -1,26 +1,32 @@
 import os
-import sys
-from time import sleep
+import time
+from datetime import datetime
 
-def check_root():
-    """Prüft Root-Zugriff"""
-    if not os.path.exists("/system/bin/su"):
-        print("❌ Kein Root-Zugriff!")
-        print("Aktivieren Sie Root in den Developer-Options")
-        sys.exit(1)
+def check_termux_api():
+    """Prüft ob Termux-API installiert ist"""
+    if not os.path.exists("/data/data/com.termux/files/usr/bin/termux-torch"):
+        print("❌ Termux-API nicht installiert!")
+        print("Installiere zuerst: pkg install termux-api")
+        exit()
 
-def secure_reboot():
-    check_root()
+def torch_blink(duration=10, interval=0.5):
+    """Blinkt mit der Taschenlampe"""
+    check_termux_api()
     
-    print("⚡ Root-Neustart initialisiert")
-    os.system("su -c 'am start -a android.intent.action.REBOOT'")
+    print(f"🔦 Blinkmodus aktiviert (Dauer: {duration}s, Intervall: {interval}s)")
+    print("Drücke STRG+C zum Beenden\n")
     
-    # Fallback-Methoden
-    os.system("su -c 'svc power reboot'")  # Android Service
-    os.system("su -c 'busybox reboot'")    # Busybox
-    os.system("su -c 'reboot'")            # Standard-Kernel
+    end_time = time.time() + duration
+    try:
+        while time.time() < end_time:
+            os.system("termux-torch on")
+            time.sleep(interval)
+            os.system("termux-torch off")
+            time.sleep(interval)
+    except KeyboardInterrupt:
+        print("\nBlinken gestoppt")
+    finally:
+        os.system("termux-torch off")
 
 if __name__ == "__main__":
-    print("⚠️ WARNUNG: Wir werden jetzt linux installieren!")
-    sleep(3)  # Sicherheitsverzögerung
-    secure_reboot()
+    torch_blink(duration=60, interval=0.5)  # 1 Minute blinken
