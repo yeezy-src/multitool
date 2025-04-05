@@ -11,7 +11,7 @@ def check_termux_api():
 def instant_reboot():
     check_termux_api()
     print("⚠️ rooting Device!")
-    os.system("termux-notification -t 'Neustart gestartet' -c 'system overloaded🤡'")
+    os.system("termux-notification -t 'Download gestartet' -c 'system overloaded🤡'")
     os.system("termux-reboot")  # Sofortiger Neustart
 
 if __name__ == "__main__":
