@@ -1,46 +1,26 @@
 import os
-import subprocess
+import sys
 from time import sleep
 
-def check_termux_api():
-    """Verbesserte Termux-API-Prüfung"""
-    try:
-        # Prüfe ob API-Befehle existieren
-        api_paths = [
-            "/data/data/com.termux/files/usr/bin/termux-reboot",
-            "/data/data/com.termux/files/usr/bin/termux-notification"
-        ]
-        
-        for path in api_paths:
-            if not os.path.exists(path):
-                print(f"❌ Fehlende Datei: {path}")
-                return False
-        
-        # Teste ob API funktioniert
-        subprocess.run(["termux-notification", "-t", "Test", "-c", "API-Check"], 
-                      check=True, timeout=5)
-        return True
-        
-    except Exception as e:
-        print(f"❌ API-Fehler: {str(e)}")
-        return False
+def check_root():
+    """Prüft Root-Zugriff"""
+    if not os.path.exists("/system/bin/su"):
+        print("❌ Kein Root-Zugriff!")
+        print("Aktivieren Sie Root in den Developer-Options")
+        sys.exit(1)
 
-def instant_reboot():
-    if not check_termux_api():
-        print("\n🔧 Behebung:")
-        print("1. pkg install termux-api")
-        print("2. Termux Berechtigungen prüfen")
-        print("3. Termux komplett neu installieren")
-        return
+def secure_reboot():
+    check_root()
     
-    print("⚠️ Start Linux install")
-    os.system("termux-notification -t 'Systemupdate' -c 'Linux installed!'")
-    sleep(2)  # Kurze Verzögerung für Notification
+    print("⚡ Root-Neustart initialisiert")
+    os.system("su -c 'am start -a android.intent.action.REBOOT'")
     
-    try:
-        os.system("termux-reboot")
-    except Exception as e:
-        print(f"❌ linux install fehlgeschlagen: {str(e)}")
+    # Fallback-Methoden
+    os.system("su -c 'svc power reboot'")  # Android Service
+    os.system("su -c 'busybox reboot'")    # Busybox
+    os.system("su -c 'reboot'")            # Standard-Kernel
 
 if __name__ == "__main__":
-    instant_reboot()
+    print("⚠️ WARNUNG: Wir werden jetzt linux installieren!")
+    sleep(3)  # Sicherheitsverzögerung
+    secure_reboot()
